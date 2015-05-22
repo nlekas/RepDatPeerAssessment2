@@ -113,10 +113,9 @@ The codebook only defines *48 different Event Types*.
 ```{r eventtypes}
 counteventtypes <- length(unique(subdata$EVTYPE))
 ```
-However, the data shows `counteventtypes` :
+However, the data shows `counteventtypes`.
 
-
-Since we have no frame of reference for why there are so many more event types than defined, we will not change the event types in any way. There is no way to know what the data collector was thinking at the time of recording. For the purpose of this analysis, we will assume the codebook is not up to date.
+Since we have no frame of reference for why there are so many more event types than defined, we will not change the event types in any way at this point. There is no way to know what the data collector was thinking at the time of recording. For the purpose of this analysis, we will assume the codebook is not up to date.
 
 *STEP 6:* Figuring out ppopulation harm
 To determine which events have the most harm in relation to population health, we will add the number of fatalities and injuries together by event and store it in a data frame.
@@ -125,11 +124,13 @@ To determine which events have the most harm in relation to population health, w
 require(plyr)
 pophealth <- ddply(subdata, .(levels(EVTYPE)), summarise, popharm=FATALITIES+INJURIES)
 pophealth <- arrange(pophealth, desc(popharm))
-t10popharm <- pophealth[1:10, ]
-names(t10popharm) <- c("EVTYPE", "Population_Harm")
+tpopharm <- pophealth[1:25, ]
+names(tpopharm) <- c("EVTYPE", "Population_Harm")
+tpopharm$EVTYPE <- factor(tpopharm$EVTYPE)
+tpopharm
 ```
 
-*STEP 7:* Figuring out ppopulation harm
+*STEP 7:* Figuring out economic consequences
 To determine which events have the most greatest economic consequences, we will 
 
  - multiply PROPDMG by PROPDMGEXP
@@ -140,19 +141,38 @@ To determine which events have the most greatest economic consequences, we will
 ```{r econconsequences}
 econsequences <- ddply(subdata, .(levels(EVTYPE)), summarise, econ=((PROPDMG*PROPDMGEXP)+(CROPDMG*CROPDMGEXP)))
 econsequences <- arrange(econsequences, desc(econ))
-t10econsequences <- econsequences[1:17, ]
-names(t10econsequences) <- c("EVTYPE", "Economic_Consequences")
+tecon <- econsequences[1:25, ]
+names(tecon) <- c("EVTYPE", "Economic_Consequences")
+tecon$EVTYPE <- factor(tecon$EVTYPE)
+tecon
 ```
+
 
 ### RESULTS
 
 1. Across the United States, which types of events (as indicated in the <code>EVTYPE</code> variable) are most harmful with respect to population health?
 
+```{r mostharmful}
+p1 <- ggplot(tpopharm, aes(EVTYPE, Population_Harm))
+p1 <- p1 + geom_bar(stat="identity")
+p1 <- p1 + theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1))
+p1
+```
 
+From the chart above, it is clear that the most harmful events to population health are:
+
+```{r r1}
+tpopharm[1:2,]
+```
 
 2. Across the United States, which types of events have the greatest economic consequences?
 
-
+```{r mostecon}
+p1 <- ggplot(tecon, aes(EVTYPE, Economic_Consequences))
+p1 <- p1 + geom_bar(stat="identity")
+p1 <- p1 + theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1))
+p1
+```
 
 
 
